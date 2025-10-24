@@ -2,6 +2,7 @@ package com.example.androiduitesting;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,44 +26,42 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        nameField = findViewById(R.id.field_nameEntry);
-        newName  = findViewById(R.id.editText_name);
+        // Find views
+        LinearLayout nameField = findViewById(R.id.field_nameEntry);
+        EditText newName = findViewById(R.id.editText_name);
+        ListView cityList = findViewById(R.id.city_list);
 
-        cityList = findViewById(R.id.city_list);
+        // Data source for the ListView
+        ArrayList<String> dataList = new ArrayList<>();
 
-        //String []cities ={"Edmonton", "Vancouver", "Moscow", "Sydney", "Berlin", "Vienna", "Tokyo", "Beijing", "Osaka", "New Delhi"};
-
-        dataList = new ArrayList<>();
-
-        //dataList.addAll(Arrays.asList(cities));
-
-        cityAdapter = new ArrayAdapter<>(this, R.layout.content, dataList);
-
-
+        // Use a built-in row layout that contains a single TextView
+        ArrayAdapter<String> cityAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, dataList);
         cityList.setAdapter(cityAdapter);
 
-        final Button addButton = findViewById(R.id.button_add);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                nameField.setVisibility(View.VISIBLE);
-            }
+        // Add button: show input field
+        Button addButton = findViewById(R.id.button_add);
+        addButton.setOnClickListener(v -> nameField.setVisibility(View.VISIBLE));
+
+        // Confirm button: add the typed city to the adapter
+        Button confirmButton = findViewById(R.id.button_confirm);
+        confirmButton.setOnClickListener(v -> {
+            String cityName = newName.getText().toString();
+            cityAdapter.add(cityName);
+            newName.getText().clear();
+            nameField.setVisibility(View.INVISIBLE);
         });
 
-        final Button confirmButton = findViewById(R.id.button_confirm);
-        confirmButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                String cityName = newName.getText().toString();
-                cityAdapter.add(cityName);
-                newName.getText().clear();
-                nameField.setVisibility(View.INVISIBLE);
-            }
-        });
+        // Clear button: clear all items
+        Button clearButton = findViewById(R.id.button_clear);
+        clearButton.setOnClickListener(v -> cityAdapter.clear());
 
-        final Button deleteButton = findViewById(R.id.button_clear);
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                cityAdapter.clear();
-            }
+        // >>> New: open ShowActivity when a list item is clicked
+        cityList.setOnItemClickListener((parent, view, position, id) -> {
+            String city = cityAdapter.getItem(position);
+            Intent intent = new Intent(MainActivity.this, ShowActivity.class);
+            intent.putExtra(ShowActivity.EXTRA_CITY, city);
+            startActivity(intent);
         });
     }
 }
